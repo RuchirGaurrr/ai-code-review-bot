@@ -1,0 +1,13 @@
+# Virtual environment
+env/
+
+# Secret keys
+backend/.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# VS Code
+.vscode/
