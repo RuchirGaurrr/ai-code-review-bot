@@ -1,42 +1,102 @@
+import { useRef, useEffect } from "react"
+
 function CodeInput({ code, setCode, onSubmit, loading }) {
+  const textareaRef = useRef(null)
+
+  // Auto resize on every code change
+  useEffect(() => {
+    const textarea = textareaRef.current
+    if (textarea) {
+      textarea.style.height = "auto"
+      textarea.style.height = `${textarea.scrollHeight}px`
+    }
+  }, [code])
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      onSubmit()
+    }
+  }
+
+  const lineCount = code.split("\n").length
+
   return (
-    <div className="w-full max-w-3xl mx-auto">
+    <div className="w-full max-w-xl mx-auto">
 
       {/* Header */}
-      <div className="mb-6 text-center">
+      <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold text-white mb-2">AI Code Review Bot 🤖</h1>
-        <p className="text-gray-400">Paste your code and get instant AI-powered feedback</p>
+        <p className="text-gray-400 text-sm">Paste your code and get instant AI-powered feedback</p>
       </div>
 
-      {/* Code Textarea */}
-      <div className="mb-4">
-        <label className="text-gray-300 text-sm font-medium mb-2 block">
-          Your Code
-        </label>
+      {/* Floating Input Box */}
+      <div className="bg-[#2b2b2b] rounded-2xl border border-[#3a3a3a] shadow-2xl p-4">
+
+        {/* Textarea — auto expanding */}
         <textarea
+          ref={textareaRef}
           value={code}
-          onChange={(e) => setCode(e.target.value)}
+          onChange={(e) => {
+            if (e.target.value.length <= 5000) {
+              setCode(e.target.value)
+            }
+          }}
+          onKeyDown={handleKeyDown}
           placeholder="Paste your code here..."
-          rows={15}
-          className="w-full bg-gray-800 text-green-400 border border-gray-600 rounded-lg p-4 font-mono text-sm focus:outline-none focus:border-blue-500 resize-none"
+          style={{ minHeight: "60px", maxHeight: "400px", overflowY: "auto" }}
+          className="w-full bg-transparent text-gray-200 placeholder-gray-500 font-mono text-sm focus:outline-none resize-none leading-relaxed"
         />
-        {/* Character count */}
-        <p className="text-gray-500 text-xs mt-1 text-right">
-          {code.length} characters
-        </p>
+
+        {/* Bottom bar */}
+        <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#3a3a3a]">
+
+          {/* Line count */}
+          <span className="text-gray-500 text-xs">
+            {lineCount} {lineCount === 1 ? "line" : "lines"}
+          </span>
+          {code.length > 4000 && (
+            <span className="text-yellow-500 text-xs">
+              {5000 - code.length} characters remaining
+            </span>
+          )}
+
+          <div className="flex items-center gap-3">
+            {/* Ctrl+Enter hint */}
+            <span className="text-gray-600 text-xs">Ctrl + Enter to review</span>
+
+            {/* Submit button */}
+            <button
+              onClick={onSubmit}
+              disabled={loading || !code.trim()}
+              className="bg-white hover:bg-gray-200 disabled:bg-gray-600 disabled:cursor-not-allowed text-black font-semibold text-sm px-4 py-1.5 rounded-lg transition-colors duration-200 flex items-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="w-3 h-3 border-2 border-gray-400 border-t-black rounded-full animate-spin"></div>
+                  Reviewing...
+                </>
+              ) : (
+                <>
+                  Review
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
+                </>
+              )}
+            </button>
+
+          </div>
+        </div>
       </div>
 
-      {/* Submit Button */}
-      <button
-        onClick={onSubmit}
-        disabled={loading || !code.trim()}
-        className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors duration-200"
-      >
-        {loading ? "Reviewing..." : "Review My Code"}
-      </button>
+      {/* Helper text */}
+      <p className="text-center text-gray-600 text-xs mt-3">
+        Supports Python, JavaScript, and more
+      </p>
 
     </div>
-  );
+  )
 }
 
-export default CodeInput;
+export default CodeInput
