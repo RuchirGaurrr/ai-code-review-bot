@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Base URL of our FastAPI backend
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "https://ai-code-review-bot-backend.onrender.com";
 
 // Function to send code to FastAPI and get AI review
 export const getCodeReview = async (code) => {
