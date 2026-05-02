@@ -1,7 +1,15 @@
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, useState } from "react"
 
 function CodeInput({ code, setCode, onSubmit, loading }) {
   const textareaRef = useRef(null)
+
+  const loadingMessages = [
+    "Analyzing your code...",
+    "Detecting bugs...",
+    "Checking best practices...",
+    "Generating review...",
+  ]
+  const [loadingMessage, setLoadingMessage] = useState(loadingMessages[0])
 
   // Auto resize on every code change
   useEffect(() => {
@@ -11,6 +19,20 @@ function CodeInput({ code, setCode, onSubmit, loading }) {
       textarea.style.height = `${textarea.scrollHeight}px`
     }
   }, [code])
+
+  // Cycle loading messages
+  useEffect(() => {
+    if (!loading) {
+      setLoadingMessage(loadingMessages[0])
+      return
+    }
+    let index = 0
+    const interval = setInterval(() => {
+      index = (index + 1) % loadingMessages.length
+      setLoadingMessage(loadingMessages[index])
+    }, 1500)
+    return () => clearInterval(interval)
+  }, [loading])
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
@@ -50,30 +72,34 @@ function CodeInput({ code, setCode, onSubmit, loading }) {
         {/* Bottom bar */}
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#3a3a3a]">
 
-          {/* Line count */}
-          <span className="text-gray-500 text-xs">
-            {lineCount} {lineCount === 1 ? "line" : "lines"}
-          </span>
-          {code.length > 4000 && (
-            <span className="text-yellow-500 text-xs">
-              {5000 - code.length} characters remaining
+          {/* Line count + character warning */}
+          <div className="flex items-center gap-3">
+            <span className="text-gray-500 text-xs">
+              {lineCount} {lineCount === 1 ? "line" : "lines"}
             </span>
-          )}
+            {code.length > 4000 && (
+              <span className="text-yellow-500 text-xs">
+                {5000 - code.length} characters remaining
+              </span>
+            )}
+          </div>
 
           <div className="flex items-center gap-3">
             {/* Ctrl+Enter hint */}
-            <span className="text-gray-600 text-xs">Ctrl + Enter to review</span>
+            {!loading && (
+              <span className="text-gray-600 text-xs">Ctrl + Enter to review</span>
+            )}
 
             {/* Submit button */}
             <button
               onClick={onSubmit}
               disabled={loading || !code.trim()}
-              className="bg-white hover:bg-gray-200 disabled:bg-gray-600 disabled:cursor-not-allowed text-black font-semibold text-sm px-4 py-1.5 rounded-lg transition-colors duration-200 flex items-center gap-2"
+              className="bg-white hover:bg-gray-200 disabled:bg-gray-600 disabled:cursor-not-allowed text-black disabled:text-gray-400 font-semibold text-sm px-4 py-1.5 rounded-lg transition-colors duration-200 flex items-center gap-2"
             >
               {loading ? (
                 <>
-                  <div className="w-3 h-3 border-2 border-gray-400 border-t-black rounded-full animate-spin"></div>
-                  Reviewing...
+                  <div className="w-3 h-3 border-2 border-gray-400 border-t-gray-700 rounded-full animate-spin"></div>
+                  {loadingMessage}
                 </>
               ) : (
                 <>
